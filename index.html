@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FairOffer SG</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <a class="brand" href="#checker" data-tab-link="checker" aria-label="FairOffer SG salary checker">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>FairOffer SG</strong>
+            <small>Salary evidence, not vibes</small>
+          </span>
+        </a>
+        <nav class="tabs" aria-label="Primary">
+          <button class="tab is-active" data-tab="checker" type="button">Salary Checker</button>
+          <button class="tab" data-tab="pulse" type="button">Market Pulse</button>
+          <button class="tab" data-tab="hot" type="button">Hot Offers</button>
+          <button class="tab" data-tab="companies" type="button">Companies</button>
+          <button class="tab" data-tab="data" type="button">Data</button>
+        </nav>
+        <div class="topbar-meta">
+          <span id="datasetCount">0 listings</span>
+          <span>Runs locally</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="view is-active" id="checker" aria-labelledby="checkerTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Singapore salary offer benchmark</p>
+              <h1 id="checkerTitle">Compare an offer against similar roles.</h1>
+            </div>
+            <p class="section-note">
+              Uses a local similarity model over title, responsibilities, skills, seniority, industry, and salary bands.
+            </p>
+          </div>
+
+          <div class="workbench">
+            <aside class="input-panel" aria-label="Offer inputs">
+              <form id="salaryForm">
+                <div class="field-grid">
+                  <label>
+                    <span>Job title</span>
+                    <input id="jobTitle" name="jobTitle" value="Data Scientist" autocomplete="off" />
+                  </label>
+                  <label>
+                    <span>Industry</span>
+                    <select id="industry" name="industry"></select>
+                  </label>
+                  <label>
+                    <span>Seniority</span>
+                    <select id="seniority" name="seniority"></select>
+                  </label>
+                  <label>
+                    <span>Years of experience</span>
+                    <input id="years" name="years" type="number" min="0" max="40" step="0.5" value="1" />
+                  </label>
+                </div>
+
+                <label>
+                  <span>Company or employer type</span>
+                  <input id="company" name="company" placeholder="Optional" autocomplete="off" />
+                </label>
+
+                <label>
+                  <span>Job description or responsibilities</span>
+                  <textarea id="description" name="description" rows="8">Build models, analyse product data, write Python and SQL, work with stakeholders, deploy machine learning features, experiment with generative AI workflows.</textarea>
+                </label>
+
+                <div class="field-grid money-grid">
+                  <label>
+                    <span>Monthly base offer</span>
+                    <input id="offer" name="offer" type="number" min="0" step="100" value="3500" />
+                  </label>
+                  <label>
+                    <span>Bonus months</span>
+                    <input id="bonus" name="bonus" type="number" min="0" max="12" step="0.1" value="1" />
+                  </label>
+                  <label>
+                    <span>Annual equity or RSU</span>
+                    <input id="equity" name="equity" type="number" min="0" step="500" value="0" />
+                  </label>
+                  <label>
+                    <span>Monthly allowances</span>
+                    <input id="allowance" name="allowance" type="number" min="0" step="50" value="0" />
+                  </label>
+                </div>
+
+                <div class="actions">
+                  <button class="primary-action" type="submit">Benchmark offer</button>
+                  <button class="ghost-action" id="resetForm" type="button">Reset</button>
+                </div>
+              </form>
+
+              <div class="quick-start" aria-label="Example scenarios">
+                <p>Examples</p>
+                <div id="exampleChips" class="chip-row"></div>
+              </div>
+            </aside>
+
+            <section class="results-panel" aria-live="polite">
+              <div id="resultEmpty" class="empty-state">
+                <div class="empty-visual" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <h2>Ready when the offer lands.</h2>
+                <p>Enter the role, paste the job description, add salary details, and the benchmark will show market range, percentile, risk, evidence, and a counter-offer range.</p>
+              </div>
+
+              <div id="resultContent" class="result-content" hidden>
+                <div class="result-hero">
+                  <div>
+                    <p class="eyebrow">Benchmark result</p>
+                    <h2 id="verdictTitle">Market range found</h2>
+                    <p id="verdictSubtitle"></p>
+                  </div>
+                  <div class="verdict-pill" id="verdictPill">Analysing</div>
+                </div>
+
+                <div class="metric-grid">
+                  <article class="metric-card">
+                    <span>Market median</span>
+                    <strong id="medianMetric">$0</strong>
+                    <small id="medianNote">Monthly base</small>
+                  </article>
+                  <article class="metric-card">
+                    <span>Offer percentile</span>
+                    <strong id="percentileMetric">-</strong>
+                    <small id="percentileNote">Among matched salary points</small>
+                  </article>
+                  <article class="metric-card">
+                    <span>Suggested ask</span>
+                    <strong id="askMetric">$0</strong>
+                    <small id="askNote">Counter range</small>
+                  </article>
+                  <article class="metric-card">
+                    <span>Total annual value</span>
+                    <strong id="annualMetric">$0</strong>
+                    <small id="annualNote">Base, bonus, equity, allowances</small>
+                  </article>
+                </div>
+
+                <article class="band-panel">
+                  <div class="panel-title">
+                    <div>
+                      <h3>Salary band</h3>
+                      <p>P10 to P90 across the most similar listings.</p>
+                    </div>
+                    <span id="confidenceBadge">0% confidence</span>
+                  </div>
+                  <div class="salary-band" id="salaryBand">
+                    <div class="band-fill">
+                      <span class="band-zone low"></span>
+                      <span class="band-zone mid"></span>
+                      <span class="band-zone high"></span>
+                    </div>
+                    <div class="band-marker" id="offerMarker">
+                      <span></span>
+                      <strong>Your offer</strong>
+                    </div>
+                  </div>
+                  <div class="band-labels">
+                    <span id="p10Label">P10</span>
+                    <span id="p25Label">P25</span>
+                    <span id="p50Label">P50</span>
+                    <span id="p75Label">P75</span>
+                    <span id="p90Label">P90</span>
+                  </div>
+                </article>
+
+                <div class="insight-strip" aria-label="Benchmark quality">
+                  <article class="insight-card">
+                    <span>Dataset mode</span>
+                    <strong id="dataModeMetric">Seed data</strong>
+                    <small id="dataModeNote">Import CSV rows for live precision.</small>
+                  </article>
+                  <article class="insight-card">
+                    <span>Evidence freshness</span>
+                    <strong id="freshnessMetric">0 recent</strong>
+                    <small id="freshnessNote">Recent and older salary bands are separated.</small>
+                  </article>
+                  <article class="insight-card">
+                    <span>Listing caveat</span>
+                    <strong>10-20%</strong>
+                    <small>Posted bands can sit above final offers.</small>
+                  </article>
+                </div>
+
+                <div class="two-column">
+                  <article class="analysis-card">
+                    <div class="panel-title">
+                      <div>
+                        <h3>Risk readout</h3>
+                        <p>What looks strong, weak, or uncertain.</p>
+                      </div>
+                    </div>
+                    <div id="riskList" class="risk-list"></div>
+                  </article>
+                  <article class="analysis-card">
+                    <div class="panel-title">
+                      <div>
+                        <h3>Offer scenarios</h3>
+                        <p>How different asks change annual value.</p>
+                      </div>
+                    </div>
+                    <div id="scenarioTable" class="scenario-table"></div>
+                  </article>
+                </div>
+
+                <article class="analysis-card">
+                  <div class="panel-title">
+                    <div>
+                      <h3>Evidence</h3>
+                      <p id="evidenceSummary">Top matching roles and salary bands.</p>
+                    </div>
+                    <button class="ghost-action compact" id="downloadReport" type="button">Download report</button>
+                  </div>
+                  <div id="matchList" class="match-list"></div>
+                </article>
+
+                <article class="analysis-card">
+                  <div class="panel-title">
+                    <div>
+                      <h3>Negotiation draft</h3>
+                      <p>Use the numbers, keep the tone steady.</p>
+                    </div>
+                    <button class="ghost-action compact" id="copyDraft" type="button">Copy</button>
+                  </div>
+                  <textarea id="negotiationDraft" class="draft-box" rows="9"></textarea>
+                </article>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="pulse" aria-labelledby="pulseTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Market pulse</p>
+              <h1 id="pulseTitle">Where salary bands are moving.</h1>
+            </div>
+            <div class="segmented" role="group" aria-label="Time window">
+              <button class="is-active" data-window="90" type="button">90d</button>
+              <button data-window="180" type="button">180d</button>
+              <button data-window="365" type="button">365d</button>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="dashboard-panel wide">
+              <div class="panel-title">
+                <div>
+                  <h3>Median monthly salary by industry</h3>
+                  <p>Based on the active dataset loaded in this browser.</p>
+                </div>
+              </div>
+              <div id="industryChart" class="bar-chart"></div>
+            </article>
+            <article class="dashboard-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Seniority ladder</h3>
+                  <p>P50 midpoint by level.</p>
+                </div>
+              </div>
+              <div id="seniorityChart" class="ladder-chart"></div>
+            </article>
+            <article class="dashboard-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Role demand</h3>
+                  <p>Most represented titles.</p>
+                </div>
+              </div>
+              <div id="roleChart" class="role-cloud"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="hot" aria-labelledby="hotTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Above-market watchlist</p>
+              <h1 id="hotTitle">Find the roles paying above their peers.</h1>
+            </div>
+            <div class="hot-controls" aria-label="Hot offer filters">
+              <label>
+                <span>Industry</span>
+                <select id="hotIndustryFilter"></select>
+              </label>
+              <label>
+                <span>Seniority</span>
+                <select id="hotSeniorityFilter"></select>
+              </label>
+            </div>
+          </div>
+          <div id="hotOfferList" class="hot-list"></div>
+        </section>
+
+        <section class="view" id="companies" aria-labelledby="companiesTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Employer view</p>
+              <h1 id="companiesTitle">Browse hiring patterns by company.</h1>
+            </div>
+            <label class="search-box">
+              <span>Search companies</span>
+              <input id="companySearch" placeholder="Type a company name" autocomplete="off" />
+            </label>
+          </div>
+          <div id="companyGrid" class="company-grid"></div>
+        </section>
+
+        <section class="view" id="data" aria-labelledby="dataTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Bring your own salary data</p>
+              <h1 id="dataTitle">Upgrade the benchmark with real listings.</h1>
+            </div>
+            <button class="ghost-action" id="downloadDataset" type="button">Download active CSV</button>
+          </div>
+
+          <div class="data-layout">
+            <article class="analysis-card">
+              <div class="panel-title">
+                <div>
+                  <h3>Import CSV</h3>
+                  <p>Required columns: title, company, industry, seniority, min, max. Optional: skills, description, location, source, posted.</p>
+                </div>
+              </div>
+              <textarea id="csvInput" class="draft-box" rows="12" spellcheck="false" placeholder="title,company,industry,seniority,min,max,skills,description"></textarea>
+              <div class="actions wrap">
+                <button class="primary-action" id="appendCsv" type="button">Append rows</button>
+                <button class="ghost-action" id="replaceCsv" type="button">Replace seed data</button>
+                <label class="file-control">
+                  <input id="csvFile" type="file" accept=".csv,text/csv" />
+                  Upload CSV
+                </label>
+              </div>
+              <p id="importStatus" class="status-line"></p>
+            </article>
+
+            <article class="analysis-card">
+              <div class="panel-title">
+                <div>
+                  <h3>Dataset health</h3>
+                  <p>Coverage checks before you trust the result.</p>
+                </div>
+              </div>
+              <div id="dataHealth" class="data-health"></div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="matchTemplate">
+      <article class="match-card">
+        <div>
+          <h4></h4>
+          <p></p>
+          <div class="tag-row"></div>
+        </div>
+        <div class="match-pay">
+          <strong></strong>
+          <span></span>
+          <small></small>
+        </div>
+      </article>
+    </template>
+
+    <script src="./app.js?v=20260703b"></script>
+  </body>
+</html>

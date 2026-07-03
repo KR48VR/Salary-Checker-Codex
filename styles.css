@@ -147,11 +147,29 @@ button {
   white-space: nowrap;
 }
 
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .tab.is-active,
 .segmented button.is-active {
   color: var(--ink);
   background: #e7f2f2;
   box-shadow: inset 0 0 0 1px rgba(22, 122, 127, 0.18);
+}
+
+.utility-tab {
+  color: var(--teal-dark);
+  font-weight: 750;
+}
+
+.utility-tab:hover,
+.utility-tab:focus-visible {
+  background: #f3f8f8;
+  outline: none;
 }
 
 .topbar-meta {

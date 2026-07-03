@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FairOffer SG - How It Works</title>
+    <style>
+      :root {
+        --ink: #17202a;
+        --muted: #5d6875;
+        --line: #d9e1e8;
+        --surface: #ffffff;
+        --surface-soft: #f6f8fb;
+        --field: #fbfcfe;
+        --teal: #167a7f;
+        --teal-dark: #0e5258;
+        --blue: #315d96;
+        --gold: #d6962b;
+        --red: #c8584b;
+        --green: #25855b;
+        --violet: #7157a5;
+        --shadow: 0 18px 50px rgba(23, 32, 42, 0.09);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          linear-gradient(180deg, rgba(22, 122, 127, 0.08), rgba(22, 122, 127, 0) 280px),
+          #eef3f6;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+        align-items: center;
+        gap: 18px;
+        padding: 16px 28px;
+        border-bottom: 1px solid rgba(217, 225, 232, 0.85);
+        background: rgba(250, 252, 254, 0.93);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand,
+      .home-link {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .brand strong,
+      .brand small {
+        display: block;
+      }
+
+      .brand strong {
+        font-size: 17px;
+        line-height: 1.15;
+      }
+
+      .brand small {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .brand-mark {
+        display: grid;
+        grid-template-columns: repeat(3, 7px);
+        align-items: end;
+        justify-content: center;
+        gap: 3px;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #b7c6d2;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 8px 20px rgba(23, 32, 42, 0.07);
+      }
+
+      .brand-mark span {
+        display: block;
+        width: 7px;
+        border-radius: 2px 2px 0 0;
+      }
+
+      .brand-mark span:nth-child(1) {
+        height: 13px;
+        background: var(--red);
+      }
+
+      .brand-mark span:nth-child(2) {
+        height: 21px;
+        background: var(--teal);
+      }
+
+      .brand-mark span:nth-child(3) {
+        height: 17px;
+        background: var(--gold);
+      }
+
+      .view-tabs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .tab {
+        min-height: 36px;
+        border: 0;
+        border-radius: 6px;
+        padding: 0 14px;
+        color: var(--muted);
+        background: transparent;
+        white-space: nowrap;
+      }
+
+      .tab.is-active {
+        color: var(--ink);
+        background: #e7f2f2;
+        box-shadow: inset 0 0 0 1px rgba(22, 122, 127, 0.18);
+      }
+
+      .home-link {
+        justify-self: end;
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+        color: var(--teal-dark);
+        background: var(--surface);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      main {
+        width: min(1440px, calc(100% - 44px));
+        margin: 0 auto;
+        padding: 30px 0 54px;
+      }
+
+      .intro {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      .eyebrow {
+        margin: 0 0 9px;
+        color: var(--teal-dark);
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin-bottom: 0;
+        font-size: clamp(34px, 5vw, 64px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .intro-note {
+        max-width: 460px;
+        margin-bottom: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.is-active {
+        display: block;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .diagram-shell,
+      .detail-panel,
+      .timeline-panel,
+      .build-detail {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: var(--shadow);
+      }
+
+      .diagram-shell {
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .tool-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .tool-row h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .tool-row p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .segmented {
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .segmented button,
+      .small-action {
+        min-height: 34px;
+        border: 0;
+        border-radius: 6px;
+        padding: 0 12px;
+        color: var(--muted);
+        background: transparent;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .segmented button.is-active {
+        color: var(--ink);
+        background: #e7f2f2;
+      }
+
+      .small-action {
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .small-action.is-on {
+        color: #ffffff;
+        border-color: var(--teal);
+        background: var(--teal);
+      }
+
+      .stage {
+        position: relative;
+        min-height: 600px;
+        padding: 18px;
+        overflow: auto;
+        background:
+          linear-gradient(rgba(217, 225, 232, 0.38) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(217, 225, 232, 0.38) 1px, transparent 1px),
+          #fbfcfe;
+        background-size: 32px 32px;
+      }
+
+      .map-canvas {
+        position: relative;
+        width: 1060px;
+        height: 560px;
+      }
+
+      .wires {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .wire {
+        fill: none;
+        stroke: #a8b7c4;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-dasharray: 10 12;
+        opacity: 0.55;
+        animation: flow 1.8s linear infinite;
+      }
+
+      .wire.live {
+        stroke: var(--teal);
+      }
+
+      .wire.fallback {
+        stroke: var(--gold);
+      }
+
+      .wire.output {
+        stroke: var(--blue);
+      }
+
+      body[data-route="live"] .wire.fallback,
+      body[data-route="fallback"] .wire.live {
+        opacity: 0.13;
+        animation-play-state: paused;
+      }
+
+      body[data-route="live"] .wire.live,
+      body[data-route="fallback"] .wire.fallback,
+      .wire.output {
+        opacity: 0.92;
+      }
+
+      @keyframes flow {
+        from {
+          stroke-dashoffset: 22;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      .node {
+        position: absolute;
+        display: grid;
+        gap: 8px;
+        width: 190px;
+        min-height: 114px;
+        border: 1px solid #cdd9e4;
+        border-radius: 8px;
+        padding: 14px;
+        color: var(--ink);
+        text-align: left;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 12px 28px rgba(23, 32, 42, 0.08);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease,
+          opacity 180ms ease;
+      }
+
+      .node:hover,
+      .node:focus-visible,
+      .node.is-active {
+        transform: translateY(-3px);
+        border-color: var(--teal);
+        box-shadow: 0 16px 34px rgba(22, 122, 127, 0.15);
+        outline: none;
+      }
+
+      .node.is-muted {
+        opacity: 0.46;
+      }
+
+      .node small {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .node strong {
+        font-size: 17px;
+        line-height: 1.15;
+      }
+
+      .node span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .node.browser {
+        left: 24px;
+        top: 214px;
+      }
+
+      .node.pages {
+        left: 260px;
+        top: 214px;
+      }
+
+      .node.files {
+        left: 500px;
+        top: 96px;
+      }
+
+      .node.worker {
+        left: 500px;
+        top: 324px;
+      }
+
+      .node.csv {
+        left: 500px;
+        top: 438px;
+      }
+
+      .node.mcf {
+        left: 742px;
+        top: 324px;
+      }
+
+      .node.actions {
+        left: 742px;
+        top: 438px;
+      }
+
+      .node.result {
+        left: 742px;
+        top: 96px;
+      }
+
+      .node.github {
+        left: 260px;
+        top: 438px;
+      }
+
+      .status-chip {
+        display: inline-flex;
+        width: fit-content;
+        min-height: 24px;
+        align-items: center;
+        border: 1px solid #b7c6d2;
+        border-radius: 999px;
+        padding: 0 8px;
+        color: var(--blue);
+        background: #f7faff;
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .status-chip.live {
+        color: var(--teal-dark);
+        background: #e7f2f2;
+      }
+
+      .status-chip.fallback {
+        color: #7b5514;
+        background: #fff5df;
+      }
+
+      .status-chip.automation {
+        color: #315b42;
+        background: #eaf6ef;
+      }
+
+      .detail-panel {
+        position: sticky;
+        top: 92px;
+        padding: 18px;
+      }
+
+      .detail-panel h2,
+      .build-detail h2 {
+        margin-bottom: 8px;
+        font-size: 21px;
+      }
+
+      .detail-panel p,
+      .build-detail p {
+        color: var(--muted);
+        line-height: 1.52;
+      }
+
+      .detail-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .detail-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--surface-soft);
+      }
+
+      .detail-item strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+      }
+
+      .detail-item span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .legend {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .legend-line {
+        width: 30px;
+        height: 3px;
+        border-radius: 999px;
+        background: var(--teal);
+      }
+
+      .legend-line.fallback {
+        background: var(--gold);
+      }
+
+      .legend-line.output {
+        background: var(--blue);
+      }
+
+      .build-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .timeline-panel {
+        overflow: hidden;
+      }
+
+      .timeline-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .timeline-tools h2 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .timeline {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        padding: 22px;
+        background: var(--field);
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 52px;
+        right: 52px;
+        top: 110px;
+        height: 3px;
+        border-radius: 999px;
+        background: #c8d6e0;
+      }
+
+      .timeline-progress {
+        position: absolute;
+        left: 52px;
+        top: 110px;
+        width: var(--progress-width, 0%);
+        height: 3px;
+        border-radius: 999px;
+        background: var(--teal);
+        transition: width 260ms ease;
+      }
+
+      .step {
+        position: relative;
+        min-height: 188px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 10px 24px rgba(23, 32, 42, 0.06);
+        transition:
+          transform 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .step:hover,
+      .step:focus-visible,
+      .step.is-active {
+        transform: translateY(-3px);
+        border-color: var(--teal);
+        box-shadow: 0 16px 34px rgba(22, 122, 127, 0.15);
+        outline: none;
+      }
+
+      .step-number {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        color: #ffffff;
+        background: var(--teal);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .step strong {
+        display: block;
+        margin: 18px 0 8px;
+        font-size: 17px;
+        line-height: 1.2;
+      }
+
+      .step span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.42;
+      }
+
+      .step-files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .file-pill {
+        border: 1px solid #cbd8e2;
+        border-radius: 999px;
+        padding: 4px 8px;
+        color: var(--blue);
+        background: #f7faff;
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .build-detail {
+        position: sticky;
+        top: 92px;
+        padding: 18px;
+      }
+
+      .meter {
+        display: grid;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .meter-track {
+        overflow: hidden;
+        height: 10px;
+        border-radius: 999px;
+        background: #dce6ee;
+      }
+
+      .meter-fill {
+        width: var(--meter, 12.5%);
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--teal), var(--blue));
+        transition: width 260ms ease;
+      }
+
+      .meter span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .handoff {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .handoff article {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: var(--surface);
+      }
+
+      .handoff strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .handoff p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 1100px) {
+        .topbar,
+        .workspace,
+        .build-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .view-tabs,
+        .home-link {
+          justify-self: start;
+        }
+
+        .detail-panel,
+        .build-detail {
+          position: static;
+        }
+
+        .intro {
+          display: block;
+        }
+
+        .intro-note {
+          margin-top: 14px;
+        }
+
+        .timeline {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .timeline::before,
+        .timeline-progress {
+          display: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        main {
+          width: min(100% - 24px, 1440px);
+          padding-top: 22px;
+        }
+
+        .topbar {
+          padding: 14px;
+        }
+
+        .view-tabs {
+          overflow-x: auto;
+          justify-content: flex-start;
+          width: 100%;
+        }
+
+        .tool-row,
+        .timeline-tools,
+        .handoff {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .stage {
+          min-height: 520px;
+        }
+
+        .timeline {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body data-route="live">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="FairOffer SG salary checker">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span>
+          <strong>FairOffer SG</strong>
+          <small>System map and build story</small>
+        </span>
+      </a>
+      <nav class="view-tabs" aria-label="Diagram views">
+        <button class="tab is-active" type="button" data-view="setup">Whole Setup</button>
+        <button class="tab" type="button" data-view="build">How We Built It</button>
+      </nav>
+      <a class="home-link" href="./index.html">Open Salary Checker</a>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">Interactive architecture explainer</p>
+          <h1 id="pageTitle">How the salary checker works.</h1>
+        </div>
+        <p class="intro-note">
+          Click any component or build step. Use the route toggle to see when the app uses live MyCareersFuture results and when it falls back to the local CSV snapshot.
+        </p>
+      </section>
+
+      <section class="view is-active" id="setupView" aria-label="Whole setup diagram">
+        <div class="workspace">
+          <section class="diagram-shell">
+            <div class="tool-row">
+              <div>
+                <h2>Whole Setup</h2>
+                <p>Static frontend, live Worker API, scheduled CSV fallback, and salary ranking in the browser.</p>
+              </div>
+              <div class="segmented" aria-label="Data route">
+                <button class="is-active" type="button" data-route="live">Live search path</button>
+                <button type="button" data-route="fallback">CSV fallback path</button>
+              </div>
+            </div>
+            <div class="stage">
+              <div class="map-canvas" aria-label="FairOffer SG system map">
+                <svg class="wires" viewBox="0 0 1060 560" aria-hidden="true">
+                  <path class="wire output" d="M214 270 C238 270 238 270 260 270" />
+                  <path class="wire output" d="M450 270 C476 270 476 156 500 156" />
+                  <path class="wire output" d="M690 156 C716 156 716 156 742 156" />
+                  <path class="wire live" d="M450 270 C474 270 474 384 500 384" />
+                  <path class="wire live" d="M690 384 C716 384 716 384 742 384" />
+                  <path class="wire live" d="M836 324 C836 284 836 246 836 210" />
+                  <path class="wire fallback" d="M450 270 C476 270 476 496 500 496" />
+                  <path class="wire fallback" d="M596 438 C596 408 596 374 596 324" />
+                  <path class="wire fallback" d="M356 438 C356 386 356 330 356 270" />
+                  <path class="wire fallback" d="M742 496 C716 496 716 496 690 496" />
+                </svg>
+
+                <button class="node browser is-active" type="button" data-node="browser">
+                  <small>Person</small>
+                  <strong>User browser</strong>
+                  <span>Types role, responsibilities, and offer details.</span>
+                  <span class="status-chip">Input</span>
+                </button>
+                <button class="node pages" type="button" data-node="pages">
+                  <small>Static host</small>
+                  <strong>GitHub Pages</strong>
+                  <span>Serves the salary checker with no app server.</span>
+                  <span class="status-chip">Public site</span>
+                </button>
+                <button class="node files" type="button" data-node="files">
+                  <small>Frontend files</small>
+                  <strong>HTML, CSS, JS</strong>
+                  <span>Runs matching, scoring, UI, and report download locally.</span>
+                  <span class="status-chip">Static</span>
+                </button>
+                <button class="node worker" type="button" data-node="worker" data-route-node="live">
+                  <small>Backend API</small>
+                  <strong>Cloudflare Worker</strong>
+                  <span>Searches MyCareersFuture for the exact role query.</span>
+                  <span class="status-chip live">Live API</span>
+                </button>
+                <button class="node mcf" type="button" data-node="mcf" data-route-node="live">
+                  <small>Market source</small>
+                  <strong>MyCareersFuture</strong>
+                  <span>Returns public salary listings with disclosed monthly bands.</span>
+                  <span class="status-chip live">Live data</span>
+                </button>
+                <button class="node csv" type="button" data-node="csv" data-route-node="fallback">
+                  <small>Local snapshot</small>
+                  <strong>mcf-listings.csv</strong>
+                  <span>2,497 recent listings kept beside the website.</span>
+                  <span class="status-chip fallback">Fallback</span>
+                </button>
+                <button class="node actions" type="button" data-node="actions" data-route-node="fallback">
+                  <small>Automation</small>
+                  <strong>GitHub Actions</strong>
+                  <span>Refreshes the CSV on a weekly schedule.</span>
+                  <span class="status-chip automation">Scheduled</span>
+                </button>
+                <button class="node github" type="button" data-node="github" data-route-node="fallback">
+                  <small>Repository</small>
+                  <strong>GitHub repo</strong>
+                  <span>Stores the website, CSV, scraper, and workflow file.</span>
+                  <span class="status-chip">Source</span>
+                </button>
+                <button class="node result" type="button" data-node="result">
+                  <small>Output</small>
+                  <strong>Benchmark result</strong>
+                  <span>Market range, risk readout, evidence, and counter-offer draft.</span>
+                  <span class="status-chip">Decision aid</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <aside class="detail-panel" aria-live="polite">
+            <p class="eyebrow" id="nodeKicker">Person</p>
+            <h2 id="nodeTitle">User browser</h2>
+            <p id="nodeBody">Types role, responsibilities, and offer details. The app runs in the browser, so the user can benchmark without creating an account.</p>
+            <div class="detail-list" id="nodeDetails"></div>
+            <div class="legend" aria-label="Line legend">
+              <div class="legend-row"><span class="legend-line"></span>Live role search through Cloudflare Worker</div>
+              <div class="legend-row"><span class="legend-line fallback"></span>CSV fallback and scheduled refresh</div>
+              <div class="legend-row"><span class="legend-line output"></span>Frontend processing and result path</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="buildView" aria-label="Build process diagram">
+        <div class="build-layout">
+          <section class="timeline-panel">
+            <div class="timeline-tools">
+              <div>
+                <h2>How We Built It</h2>
+                <p class="intro-note">A clickable timeline of the product decisions, files, and deployment steps.</p>
+              </div>
+              <button class="small-action" type="button" id="playBuild">Play build</button>
+            </div>
+            <div class="timeline" id="timeline" style="--progress-width: 0%;">
+              <div class="timeline-progress" aria-hidden="true"></div>
+            </div>
+          </section>
+
+          <aside class="build-detail" aria-live="polite">
+            <p class="eyebrow" id="stepKicker">Step 1</p>
+            <h2 id="stepTitle">Article idea</h2>
+            <p id="stepBody">Started from the idea of comparing salary offers against public evidence rather than gut feel.</p>
+            <div class="detail-list" id="stepDetails"></div>
+            <div class="meter">
+              <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+              <span id="meterLabel">1 of 8 steps</span>
+            </div>
+          </aside>
+        </div>
+
+        <div class="handoff" aria-label="What exists now">
+          <article>
+            <strong>Public frontend</strong>
+            <p>GitHub Pages serves the salary checker and this explainer as static files.</p>
+          </article>
+          <article>
+            <strong>Live backend</strong>
+            <p>Cloudflare Worker searches MyCareersFuture by role and returns normalized salary rows.</p>
+          </article>
+          <article>
+            <strong>Resilient fallback</strong>
+            <p>The CSV and GitHub Actions workflow keep the app useful even if the live API is unavailable.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const nodeCopy = {
+        browser: {
+          kicker: "Person",
+          title: "User browser",
+          body: "Types role, responsibilities, and offer details. The app runs in the browser, so the user can benchmark without creating an account.",
+          details: [
+            ["Input", "Job title, industry, seniority, years, description, salary, bonus, equity, and allowances."],
+            ["Privacy shape", "Matching and scoring happen client-side after the data has loaded."],
+            ["Result", "The user sees market range, offer percentile, risk readout, evidence rows, and a draft negotiation note."]
+          ]
+        },
+        pages: {
+          kicker: "Static host",
+          title: "GitHub Pages",
+          body: "Hosts the public salary checker from the repository root. It serves static assets only: no database, no private server, no build pipeline needed.",
+          details: [
+            ["Files", "index.html, styles.css, app.js, mcf-listings.csv, and this how-it-works.html page."],
+            ["Public URL", "https://kr48vr.github.io/Salary-Checker-Codex/"],
+            ["Deployment", "Every committed file replacement can become the live website after Pages refreshes."]
+          ]
+        },
+        files: {
+          kicker: "Frontend files",
+          title: "HTML, CSS, JS",
+          body: "The frontend controls the form, tabs, matching algorithm, scoring thresholds, visual result panels, and report download.",
+          details: [
+            ["index.html", "Defines the page structure and stores the Worker endpoint setting."],
+            ["styles.css", "Keeps the interface polished, responsive, and readable across screen sizes."],
+            ["app.js", "Loads CSV rows, calls the live API, merges results, ranks listings, and renders the benchmark."]
+          ]
+        },
+        worker: {
+          kicker: "Backend API",
+          title: "Cloudflare Worker",
+          body: "A tiny API that accepts a role query, calls MyCareersFuture, normalizes disclosed monthly salary rows, and sends them back to the static site.",
+          details: [
+            ["Endpoint", "https://fairoffer-mcf-api.mentalboy2000.workers.dev/?role=inspection%20engineer"],
+            ["Cache", "Role searches are cached for 1 hour to reduce repeated calls."],
+            ["Safety", "If the Worker fails, the frontend falls back to the local CSV snapshot."]
+          ]
+        },
+        mcf: {
+          kicker: "Market source",
+          title: "MyCareersFuture",
+          body: "Provides public job listings. The Worker keeps only rows with disclosed monthly salary ranges so the benchmark has usable salary evidence.",
+          details: [
+            ["Live query", "The role typed by the user becomes the search term."],
+            ["Normalized rows", "Title, company, industry, seniority, min/max salary, skills, description, location, source, date, and URL."],
+            ["Limit", "Only public listing data is used, and posted bands may differ from final negotiated offers."]
+          ]
+        },
+        csv: {
+          kicker: "Local snapshot",
+          title: "mcf-listings.csv",
+          body: "A bundled CSV snapshot gives the app a fallback dataset. It also makes the checker useful before the Worker is configured.",
+          details: [
+            ["Current size", "2,497 salary rows in the generated output."],
+            ["Use case", "Fallback when live search is unavailable, blocked, or returns too few relevant rows."],
+            ["Tradeoff", "Broader than the first 300-row sample, but still a snapshot rather than full live coverage."]
+          ]
+        },
+        actions: {
+          kicker: "Automation",
+          title: "GitHub Actions",
+          body: "Runs pull-mcf.mjs on a schedule to refresh mcf-listings.csv and commit changes when the data actually changes.",
+          details: [
+            ["Workflow", ".github/workflows/update-mcf-listings.yml"],
+            ["Schedule", "Weekly refresh, plus manual workflow_dispatch."],
+            ["Commit behavior", "No new commit is created if the CSV content does not change."]
+          ]
+        },
+        github: {
+          kicker: "Repository",
+          title: "GitHub repo",
+          body: "The repo stores the public site, the fallback CSV, the scraper, and the automation workflow. It is the source of truth for GitHub Pages.",
+          details: [
+            ["Root files", "index.html, styles.css, app.js, mcf-listings.csv, pull-mcf.mjs."],
+            ["Workflow folder", ".github/workflows/update-mcf-listings.yml."],
+            ["Worker code", "worker/worker.js is useful to store, while Cloudflare runs the deployed copy."]
+          ]
+        },
+        result: {
+          kicker: "Output",
+          title: "Benchmark result",
+          body: "The final result blends live role-specific rows with the fallback snapshot, ranks listings by fit, and explains salary position without pretending the evidence is perfect.",
+          details: [
+            ["Signals", "Title, responsibilities, skills, seniority, industry, freshness, and company text."],
+            ["Readout", "P10 to P90 salary band, offer percentile, confidence, risk notes, scenarios, and evidence rows."],
+            ["Guardrail", "If evidence is weak, the app says coverage is low instead of inventing certainty."]
+          ]
+        }
+      };
+
+      const buildSteps = [
+        {
+          title: "Article idea",
+          body: "Started from the idea of comparing salary offers against public evidence rather than gut feel.",
+          files: ["Concept"],
+          details: [
+            ["Goal", "Help someone spot whether an offer is low, fair, or strong."],
+            ["Shape", "A self-contained public tool that can run without accounts."]
+          ]
+        },
+        {
+          title: "Static checker",
+          body: "Built the first browser-only salary checker with form inputs, scoring, evidence rows, scenarios, and a negotiation draft.",
+          files: ["index.html", "styles.css", "app.js"],
+          details: [
+            ["Frontend", "The user experience lives entirely in static files."],
+            ["Scoring", "The app compares role text, skills, seniority, industry, salary, and freshness."]
+          ]
+        },
+        {
+          title: "GitHub Pages",
+          body: "Uploaded the static files to the repo root and enabled GitHub Pages from main and /root.",
+          files: ["Repo root", "Pages"],
+          details: [
+            ["Public site", "GitHub Pages serves the app at the repository URL."],
+            ["Lesson", "index.html must be at the top of the publishing source."]
+          ]
+        },
+        {
+          title: "MCF CSV import",
+          body: "Added a scraper that pulls public MyCareersFuture rows with disclosed monthly salary bands into a CSV file.",
+          files: ["pull-mcf.mjs", "mcf-listings.csv"],
+          details: [
+            ["Data source", "Public MyCareersFuture listings."],
+            ["Normalization", "Rows are shaped so the frontend can score them consistently."]
+          ]
+        },
+        {
+          title: "Automated refresh",
+          body: "Added a GitHub Actions workflow so the CSV can update on a schedule and commit only when content changes.",
+          files: ["update-mcf-listings.yml"],
+          details: [
+            ["Automation", "Runs the pull script on GitHub infrastructure."],
+            ["Fallback", "Keeps the local snapshot fresher without manual download work."]
+          ]
+        },
+        {
+          title: "Search quality fix",
+          body: "Tightened the matcher after inspection engineer queries surfaced broad software engineer results.",
+          files: ["app.js"],
+          details: [
+            ["Fix", "Removed over-broad engineer matching and added stricter score thresholds."],
+            ["Outcome", "Quality, inspection, QA, and QC roles rank better for inspection-like work."]
+          ]
+        },
+        {
+          title: "Live search backend",
+          body: "Added a Cloudflare Worker so each role query can fetch live MyCareersFuture listings instead of depending only on a snapshot.",
+          files: ["worker.js"],
+          details: [
+            ["API", "The Worker accepts role or q and returns normalized salary rows."],
+            ["Resilience", "The frontend falls back to CSV if the Worker is unavailable."]
+          ]
+        },
+        {
+          title: "Connected public app",
+          body: "Stored the Worker URL in index.html so the GitHub Pages app can call live search automatically.",
+          files: ["index.html"],
+          details: [
+            ["Endpoint", "window.FAIROFFER_API_ENDPOINT points to the Cloudflare Worker."],
+            ["Result", "The app shows when live MyCareersFuture rows are added."]
+          ]
+        }
+      ];
+
+      const tabs = Array.from(document.querySelectorAll("[data-view]"));
+      const views = {
+        setup: document.getElementById("setupView"),
+        build: document.getElementById("buildView")
+      };
+      const routeButtons = Array.from(document.querySelectorAll("[data-route]"));
+      const nodeButtons = Array.from(document.querySelectorAll("[data-node]"));
+      const timeline = document.getElementById("timeline");
+      const playBuild = document.getElementById("playBuild");
+      let activeStep = 0;
+      let playTimer = null;
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
+          Object.entries(views).forEach(([key, view]) => view.classList.toggle("is-active", key === tab.dataset.view));
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+        });
+      });
+
+      routeButtons.forEach((button) => {
+        button.addEventListener("click", () => setRoute(button.dataset.route));
+      });
+
+      nodeButtons.forEach((button) => {
+        button.addEventListener("click", () => setNode(button.dataset.node));
+      });
+
+      function setRoute(route) {
+        document.body.dataset.route = route;
+        routeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.route === route));
+        nodeButtons.forEach((button) => {
+          const routeNode = button.dataset.routeNode;
+          button.classList.toggle("is-muted", Boolean(routeNode) && routeNode !== route);
+        });
+      }
+
+      function setNode(id) {
+        const copy = nodeCopy[id];
+        if (!copy) return;
+        nodeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.node === id));
+        document.getElementById("nodeKicker").textContent = copy.kicker;
+        document.getElementById("nodeTitle").textContent = copy.title;
+        document.getElementById("nodeBody").textContent = copy.body;
+        document.getElementById("nodeDetails").innerHTML = copy.details.map(([title, body]) => (
+          `<article class="detail-item"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span></article>`
+        )).join("");
+      }
+
+      function renderTimeline() {
+        timeline.innerHTML = '<div class="timeline-progress" aria-hidden="true"></div>';
+        buildSteps.forEach((step, index) => {
+          const button = document.createElement("button");
+          button.className = "step";
+          button.type = "button";
+          button.dataset.step = String(index);
+          button.innerHTML = `
+            <span class="step-number">${index + 1}</span>
+            <strong>${escapeHtml(step.title)}</strong>
+            <span>${escapeHtml(step.body)}</span>
+            <div class="step-files">${step.files.map((file) => `<span class="file-pill">${escapeHtml(file)}</span>`).join("")}</div>
+          `;
+          button.addEventListener("click", () => {
+            stopBuildPlayback();
+            setStep(index);
+          });
+          timeline.append(button);
+        });
+        setStep(0);
+      }
+
+      function setStep(index) {
+        activeStep = index;
+        const step = buildSteps[index];
+        const progress = buildSteps.length <= 1 ? 100 : (index / (buildSteps.length - 1)) * 100;
+        timeline.style.setProperty("--progress-width", progress + "%");
+        Array.from(timeline.querySelectorAll(".step")).forEach((button) => {
+          button.classList.toggle("is-active", Number(button.dataset.step) === index);
+        });
+        document.getElementById("stepKicker").textContent = "Step " + (index + 1);
+        document.getElementById("stepTitle").textContent = step.title;
+        document.getElementById("stepBody").textContent = step.body;
+        document.getElementById("stepDetails").innerHTML = step.details.map(([title, body]) => (
+          `<article class="detail-item"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span></article>`
+        )).join("");
+        document.getElementById("meterFill").style.setProperty("--meter", ((index + 1) / buildSteps.length) * 100 + "%");
+        document.getElementById("meterLabel").textContent = (index + 1) + " of " + buildSteps.length + " steps";
+      }
+
+      playBuild.addEventListener("click", () => {
+        if (playTimer) {
+          stopBuildPlayback();
+          return;
+        }
+        playBuild.classList.add("is-on");
+        playBuild.textContent = "Pause";
+        playTimer = window.setInterval(() => {
+          const next = activeStep + 1 >= buildSteps.length ? 0 : activeStep + 1;
+          setStep(next);
+        }, 1700);
+      });
+
+      function stopBuildPlayback() {
+        if (!playTimer) return;
+        window.clearInterval(playTimer);
+        playTimer = null;
+        playBuild.classList.remove("is-on");
+        playBuild.textContent = "Play build";
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      setRoute("live");
+      setNode("browser");
+      renderTimeline();
+    </script>
+  </body>
+</html>

@@ -3,14 +3,6 @@
 import { writeFileSync } from "node:fs";
 
 const API_URL = "https://api.mycareersfuture.gov.sg/v2/jobs";
-const DEFAULT_KEYWORDS = [
-  "data scientist",
-  "data analyst",
-  "software engineer",
-  "product manager",
-  "business analyst"
-];
-
 const args = parseArgs(process.argv.slice(2));
 
 if (args.help) {
@@ -18,13 +10,14 @@ if (args.help) {
   process.exit(0);
 }
 
-const keywords = args.keywords.length ? args.keywords : DEFAULT_KEYWORDS;
-const pages = clamp(Number(args.pages || 3), 1, 25);
-const limit = clamp(Number(args.limit || 20), 1, 100);
+const searches = args.keywords.length ? args.keywords : [""];
+const pages = clamp(Number(args.pages || 25), 1, 250);
+const limit = clamp(Number(args.limit || 100), 1, 100);
 const sessionId = "fairoffer-" + Date.now();
 const rowsById = new Map();
 
-for (const keyword of keywords) {
+for (const keyword of searches) {
+  const label = keyword || "all recent jobs";
   for (let page = 0; page < pages; page += 1) {
     const payload = await fetchPage({ keyword, page, limit, sessionId });
     const results = Array.isArray(payload.results) ? payload.results : [];
@@ -35,7 +28,7 @@ for (const keyword of keywords) {
     }
 
     console.error(
-      `${keyword}: page ${page + 1}/${pages}, ${results.length} listings, ${rowsById.size} usable salary rows`
+      `${label}: page ${page + 1}/${pages}, ${results.length} listings, ${rowsById.size} usable salary rows`
     );
 
     if (!results.length || rowsById.size >= args.maxRows) break;
@@ -61,10 +54,10 @@ function parseArgs(argv) {
     delay: 350,
     help: false,
     keywords: [],
-    limit: 20,
-    maxRows: 500,
+    limit: 100,
+    maxRows: 2500,
     out: "",
-    pages: 3
+    pages: 25
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -90,7 +83,7 @@ function parseArgs(argv) {
 
 async function fetchPage({ keyword, page, limit, sessionId }) {
   const url = new URL(API_URL);
-  url.searchParams.set("search", keyword);
+  if (keyword) url.searchParams.set("search", keyword);
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("page", String(page));
   url.searchParams.set("salary", "0");
@@ -224,16 +217,18 @@ function printHelp() {
 Pull public MyCareersFuture listings into FairOffer SG CSV.
 
 Usage:
-  node pull-mcf.mjs "data scientist" "software engineer" --pages 5 --out mcf.csv
+  node pull-mcf.mjs --pages 25 --limit 100 --max-rows 2500 --out mcf.csv
+  node pull-mcf.mjs "inspection engineer" --pages 5 --out mcf.csv
 
 Options:
   --out <file>       Write CSV to a file instead of stdout
-  --pages <n>        Pages per keyword, default 3
-  --limit <n>        Listings per page, default 20
-  --max-rows <n>     Maximum unique rows, default 500
+  --pages <n>        Pages to pull, default 25
+  --limit <n>        Listings per page, default 100
+  --max-rows <n>     Maximum unique rows, default 2500
   --delay <ms>       Pause between requests, default 350
 
 Notes:
+  With no keyword arguments, the script pulls broad recent listings across MCF.
   Only public listings with disclosed monthly salary bands are exported.
   Import the generated CSV in FairOffer SG's Data tab.
 `.trim());

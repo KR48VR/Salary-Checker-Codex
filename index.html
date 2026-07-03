@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FairOffer SG</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260703e" />
+    <script>
+      window.FAIROFFER_API_ENDPOINT = "";
+    </script>
   </head>
   <body>
     <div class="app">
@@ -124,6 +127,7 @@
                   </div>
                   <div class="verdict-pill" id="verdictPill">Analysing</div>
                 </div>
+                <p class="status-line live-status" id="liveStatus"></p>
 
                 <div class="metric-grid">
                   <article class="metric-card">
@@ -377,6 +381,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=20260703c"></script>
+    <script src="./app.js?v=20260703e"></script>
   </body>
 </html>

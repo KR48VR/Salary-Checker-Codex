@@ -240,14 +240,15 @@
   ];
 
   const stopwords = new Set([
-    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "into", "is", "it", "of", "on", "or", "our", "the", "to", "with", "you", "your", "we", "will", "work", "role", "team", "teams"
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "into", "is", "it", "of", "on", "or", "our", "the", "to", "with", "you", "your", "we", "will", "work", "role", "team", "teams", "engineer", "engineering"
   ]);
 
   const synonymGroups = [
     ["ai", "artificial", "intelligence", "llm", "generative", "genai"],
     ["ml", "machine", "learning", "model", "models"],
     ["analytics", "analysis", "analyse", "analyze", "dashboard", "reporting"],
-    ["software", "developer", "engineering", "engineer"],
+    ["software", "developer", "programming", "coding", "backend", "frontend", "fullstack"],
+    ["inspection", "inspector", "inspect", "quality", "qa", "assurance", "control", "checks"],
     ["cloud", "aws", "azure", "gcp"],
     ["security", "cyber", "soc", "siem"],
     ["product", "roadmap", "experimentation"],
@@ -258,10 +259,12 @@
   const state = {
     data: buildSeedData(),
     lastResult: null,
+    liveRequestId: 0,
     pulseWindow: 90
   };
 
   const bundledDatasetPath = "./mcf-listings.csv";
+  const liveApiEndpoint = String(window.FAIROFFER_API_ENDPOINT || "").trim();
 
   const els = {
     tabs: Array.from(document.querySelectorAll("[data-tab]")),
@@ -305,6 +308,7 @@
     riskList: document.getElementById("riskList"),
     scenarioTable: document.getElementById("scenarioTable"),
     matchList: document.getElementById("matchList"),
+    liveStatus: document.getElementById("liveStatus"),
     evidenceSummary: document.getElementById("evidenceSummary"),
     negotiationDraft: document.getElementById("negotiationDraft"),
     copyDraft: document.getElementById("copyDraft"),
@@ -479,13 +483,21 @@
     });
   }
 
-  function runBenchmark() {
+  async function runBenchmark() {
     const input = getInput();
-    const ranked = rankListings(input);
-    const matches = ranked.filter((item) => item.score >= 18).slice(0, 24);
-    const usableMatches = matches.length >= 6 ? matches : ranked.slice(0, 12);
+    const requestId = ++state.liveRequestId;
+    if (els.liveStatus) {
+      els.liveStatus.textContent = liveApiEndpoint ? "Searching live MyCareersFuture listings..." : "Using local MyCareersFuture snapshot.";
+    }
+
+    const liveResult = await fetchLiveRows(input);
+    if (requestId !== state.liveRequestId) return;
+
+    const candidates = liveResult.rows.length ? mergeListings(liveResult.rows, state.data) : state.data;
+    const ranked = rankListings(input, candidates);
+    const usableMatches = ranked.filter((item) => item.score >= 24).slice(0, 24);
     const stats = buildStats(usableMatches, input);
-    state.lastResult = { input, ranked: usableMatches, stats };
+    state.lastResult = { input, ranked: usableMatches, stats, liveResult };
     renderResult(state.lastResult);
   }
 
@@ -504,13 +516,45 @@
     };
   }
 
-  function rankListings(input) {
+  async function fetchLiveRows(input) {
+    if (!liveApiEndpoint || !input.title) {
+      return { rows: [], mode: "snapshot" };
+    }
+
+    try {
+      const url = new URL(liveApiEndpoint, window.location.href);
+      url.searchParams.set("role", input.title);
+      url.searchParams.set("limit", "100");
+      url.searchParams.set("pages", "3");
+
+      const response = await fetch(url.toString(), { cache: "no-store" });
+      if (!response.ok) throw new Error("Live search returned " + response.status);
+
+      const payload = await response.json();
+      const rows = (payload.results || []).map(normalizeImportedRow).filter(Boolean);
+      return { rows, mode: "live", total: payload.total || 0 };
+    } catch (error) {
+      return { rows: [], mode: "fallback", error: error.message };
+    }
+  }
+
+  function mergeListings(primary, secondary) {
+    const seen = new Set();
+    return primary.concat(secondary).filter((row) => {
+      const key = row.url || row.source || [row.title, row.company, row.posted].join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function rankListings(input, rows = state.data) {
     const titleTokens = expandTokens(tokenize(input.title));
     const descTokens = expandTokens(tokenize(input.description));
     const companyTokens = expandTokens(tokenize(input.company));
     const seniorityGuess = seniorityFromYears(input.years);
 
-    return state.data
+    return rows
       .map((listing) => {
         const listingTitleTokens = expandTokens(tokenize(listing.title + " " + listing.family));
         const listingBodyTokens = expandTokens(tokenize(listing.description + " " + listing.skills.join(" ")));
@@ -534,6 +578,27 @@
   }
 
   function buildStats(matches, input) {
+    if (!matches.length) {
+      return {
+        p10: null,
+        p25: null,
+        p50: null,
+        p75: null,
+        p90: null,
+        offerPercentile: null,
+        confidence: 0,
+        totalAnnual: annualValue(input.offer, input.bonus, input.equity, input.allowance),
+        verdict: {
+          title: "Not enough matching evidence",
+          subtitle: "The current dataset has no close salary rows for this role. Treat the result as low coverage, not as a market benchmark.",
+          label: "Low coverage",
+          tone: "watch"
+        },
+        points: [],
+        noData: true
+      };
+    }
+
     const points = matches.flatMap((item) => [item.min, midpoint(item), item.max]).sort((a, b) => a - b);
     const p10 = percentile(points, 10);
     const p25 = percentile(points, 25);
@@ -557,19 +622,19 @@
     els.verdictPill.textContent = stats.verdict.label;
     els.verdictPill.className = "verdict-pill " + stats.verdict.tone;
 
-    els.medianMetric.textContent = money(stats.p50);
-    els.percentileMetric.textContent = stats.offerPercentile === null ? "No offer" : Math.round(stats.offerPercentile) + "th";
+    els.medianMetric.textContent = stats.noData ? "No match" : money(stats.p50);
+    els.percentileMetric.textContent = stats.noData ? "-" : stats.offerPercentile === null ? "No offer" : Math.round(stats.offerPercentile) + "th";
     els.percentileNote.textContent = ranked.length + " matched roles";
-    els.askMetric.textContent = money(stats.p50) + "-" + money(stats.p75);
+    els.askMetric.textContent = stats.noData ? "-" : money(stats.p50) + "-" + money(stats.p75);
     els.annualMetric.textContent = input.offer ? money(stats.totalAnnual) : "-";
     els.annualNote.textContent = input.offer ? "Includes " + input.bonus + " month bonus" : "Add an offer to calculate";
     els.confidenceBadge.textContent = stats.confidence + "% confidence";
 
-    els.p10Label.textContent = "P10 " + money(stats.p10);
-    els.p25Label.textContent = "P25 " + money(stats.p25);
-    els.p50Label.textContent = "P50 " + money(stats.p50);
-    els.p75Label.textContent = "P75 " + money(stats.p75);
-    els.p90Label.textContent = "P90 " + money(stats.p90);
+    els.p10Label.textContent = stats.noData ? "P10 -" : "P10 " + money(stats.p10);
+    els.p25Label.textContent = stats.noData ? "P25 -" : "P25 " + money(stats.p25);
+    els.p50Label.textContent = stats.noData ? "P50 -" : "P50 " + money(stats.p50);
+    els.p75Label.textContent = stats.noData ? "P75 -" : "P75 " + money(stats.p75);
+    els.p90Label.textContent = stats.noData ? "P90 -" : "P90 " + money(stats.p90);
     renderMarker(input.offer, stats);
     renderInsightStrip(result);
     renderRisk(result);
@@ -577,24 +642,40 @@
     renderMatches(ranked, stats);
     els.negotiationDraft.value = buildNegotiationDraft(result);
     els.evidenceSummary.textContent = ranked.length + " similar roles, sorted by fit score. Seed rows can be replaced with imported MyCareersFuture or internal compensation data.";
+    renderLiveStatus(result);
   }
 
   function renderInsightStrip(result) {
-    const { ranked } = result;
+    const { ranked, liveResult } = result;
     const importedRows = state.data.filter((row) => row.source !== "Seed benchmark").length;
     const freshness = freshnessBreakdown(ranked);
-    els.dataModeMetric.textContent = importedRows ? "Imported + seed" : "Seed data";
-    els.dataModeNote.textContent = importedRows
-      ? importedRows + " imported rows are included in the benchmark."
-      : "Replace or append CSV rows before citing this publicly.";
+    const liveRows = liveResult && liveResult.rows ? liveResult.rows.length : 0;
+    els.dataModeMetric.textContent = liveRows ? "Live + snapshot" : importedRows ? "Imported + seed" : "Seed data";
+    els.dataModeNote.textContent = liveRows
+      ? liveRows + " live MCF rows were blended with the local snapshot."
+      : importedRows
+        ? importedRows + " imported rows are included in the benchmark."
+        : "Replace or append CSV rows before citing this publicly.";
     els.freshnessMetric.textContent = freshness.recent + " recent / " + freshness.historical + " older";
     els.freshnessNote.textContent = freshness.recent
       ? "Recent evidence is weighted alongside older benchmarks."
       : "No recent evidence in this match set; treat the result as directional.";
   }
 
+  function renderLiveStatus(result) {
+    if (!els.liveStatus) return;
+    const liveResult = result.liveResult || { rows: [], mode: "snapshot" };
+    if (liveResult.rows && liveResult.rows.length) {
+      els.liveStatus.textContent = "Live MyCareersFuture search added " + liveResult.rows.length + " role-specific rows.";
+    } else if (liveResult.mode === "fallback") {
+      els.liveStatus.textContent = "Live search unavailable; using local MyCareersFuture snapshot.";
+    } else {
+      els.liveStatus.textContent = "Using local MyCareersFuture snapshot.";
+    }
+  }
+
   function renderMarker(offer, stats) {
-    if (!offer) {
+    if (!offer || stats.noData) {
       els.offerMarker.hidden = true;
       return;
     }
@@ -608,6 +689,16 @@
   function renderRisk(result) {
     const { input, stats, ranked } = result;
     const items = [];
+    if (stats.noData) {
+      els.riskList.innerHTML = `
+        <article class="risk-item watch">
+          <strong>Coverage gap</strong>
+          <span>No close evidence rows were found. Use a broader title, choose a more specific industry, or wait for the broader scheduled dataset refresh.</span>
+        </article>
+      `;
+      return;
+    }
+
     if (input.offer) {
       const gapToMedian = input.offer - stats.p50;
       const gapToP25 = input.offer - stats.p25;
@@ -663,6 +754,16 @@
 
   function renderScenarios(result) {
     const { input, stats } = result;
+    if (stats.noData) {
+      els.scenarioTable.innerHTML = `
+        <div class="scenario-row">
+          <div><strong>No counter range yet</strong><span>Need closer evidence rows before calculating a suggested ask.</span></div>
+          <b>-</b>
+        </div>
+      `;
+      return;
+    }
+
     const rows = [
       { label: "Current offer", monthly: input.offer || stats.p50, note: input.offer ? "As entered" : "No offer entered" },
       { label: "Market median", monthly: stats.p50, note: "Matched P50 base" },
@@ -683,6 +784,24 @@
   function renderMatches(matches) {
     const template = document.getElementById("matchTemplate");
     els.matchList.innerHTML = "";
+    if (!matches.length) {
+      els.matchList.innerHTML = `
+        <article class="match-card">
+          <div>
+            <h4>No close evidence rows</h4>
+            <p>The loaded dataset does not yet contain roles close enough to this title and description.</p>
+            <div class="tag-row"><span class="tag benchmark">Low coverage</span></div>
+          </div>
+          <div class="match-pay">
+            <strong>-</strong>
+            <span>0% fit</span>
+            <small>Refresh the broad MCF dataset for better coverage.</small>
+          </div>
+        </article>
+      `;
+      return;
+    }
+
     matches.slice(0, 9).forEach((match) => {
       const node = template.content.cloneNode(true);
       node.querySelector("h4").textContent = match.title;
@@ -707,6 +826,18 @@
 
   function buildNegotiationDraft(result) {
     const { input, stats, ranked } = result;
+    if (stats.noData) {
+      return [
+        "Hi " + (input.company || "the team") + ",",
+        "",
+        "Thank you again for the offer and for the conversations so far. I am excited about the scope of " + (input.title || "the role") + " and the chance to contribute.",
+        "",
+        "I am still gathering role-specific salary evidence for this scope. Before I anchor on a number, would you be open to sharing the approved salary band and how the offer was calibrated against the role requirements?",
+        "",
+        "That would help me compare the package fairly across base salary, bonus, benefits, flexibility, and growth expectations."
+      ].join("\n");
+    }
+
     const targetLow = roundHundred(stats.p50);
     const targetHigh = roundHundred(stats.p75);
     const role = input.title || "the role";

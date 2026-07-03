@@ -261,6 +261,8 @@
     pulseWindow: 90
   };
 
+  const bundledDatasetPath = "./mcf-listings.csv";
+
   const els = {
     tabs: Array.from(document.querySelectorAll("[data-tab]")),
     views: Array.from(document.querySelectorAll(".view")),
@@ -338,6 +340,7 @@
     bindEvents();
     updateDatasetViews();
     runBenchmark();
+    loadBundledDataset();
   }
 
   function bindEvents() {
@@ -386,6 +389,24 @@
     els.downloadDataset.addEventListener("click", () => downloadText("fairoffer-active-dataset.csv", toCsv(state.data)));
     els.downloadReport.addEventListener("click", downloadReport);
     els.copyDraft.addEventListener("click", copyDraft);
+  }
+
+  async function loadBundledDataset() {
+    try {
+      const response = await fetch(bundledDatasetPath, { cache: "no-store" });
+      if (!response.ok) return;
+
+      const text = await response.text();
+      const rows = parseCsv(text).map(normalizeImportedRow).filter(Boolean);
+      if (!rows.length) return;
+
+      state.data = rows;
+      els.importStatus.textContent = "Loaded " + rows.length + " MyCareersFuture rows from bundled CSV.";
+      updateDatasetViews();
+      runBenchmark();
+    } catch (error) {
+      // Opening index.html directly may block local file fetches; manual CSV import still works.
+    }
   }
 
   function activateTab(tabName) {
@@ -973,12 +994,13 @@
       description: row.description || row.jd || row.summary || title,
       location: row.location || "Singapore",
       source: row.source || "Imported CSV",
-      posted: row.posted || todayIso()
+      posted: row.posted || todayIso(),
+      url: row.url || ""
     };
   }
 
   function toCsv(rows) {
-    const headers = ["title", "company", "industry", "seniority", "min", "max", "skills", "description", "location", "source", "posted"];
+    const headers = ["title", "company", "industry", "seniority", "min", "max", "skills", "description", "location", "source", "posted", "url"];
     return [headers.join(",")]
       .concat(rows.map((row) => headers.map((header) => csvCell(Array.isArray(row[header]) ? row[header].join(";") : row[header])).join(",")))
       .join("\n");

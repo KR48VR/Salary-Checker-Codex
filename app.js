@@ -884,7 +884,7 @@
   }
 
   function updateDatasetViews() {
-    els.datasetCount.textContent = state.data.length + " listings";
+    els.datasetCount.textContent = state.data.length + " fallback rows";
     renderPulse();
     renderHotOffers();
     renderCompanies();
